@@ -1,0 +1,73 @@
+import pygame
+import sys
+
+# Инициализация Pygame
+pygame.init()
+
+# Константы
+WIDTH, HEIGHT = 600, 400
+BALL_RADIUS = 10
+PADDLE_WIDTH, PADDLE_HEIGHT = 10, 60
+FPS = 60
+
+# Цвета
+WHITE = (255, 255, 255)
+BLACK = (0, 0, 0)
+
+# Создание окна
+screen = pygame.display.set_mode((WIDTH, HEIGHT))
+pygame.display.set_caption("Пинг-понг")
+
+# Инициализация объектов
+ball = pygame.Rect(WIDTH // 2 - BALL_RADIUS, HEIGHT // 2 - BALL_RADIUS, BALL_RADIUS * 2, BALL_RADIUS * 2)
+paddle_left = pygame.Rect(20, HEIGHT // 2 - PADDLE_HEIGHT // 2, PADDLE_WIDTH, PADDLE_HEIGHT)
+paddle_right = pygame.Rect(WIDTH - 20 - PADDLE_WIDTH, HEIGHT // 2 - PADDLE_HEIGHT // 2, PADDLE_WIDTH, PADDLE_HEIGHT)
+
+# Начальная скорость мяча
+ball_speed = [3, 3]
+
+# Основной игровой цикл
+clock = pygame.time.Clock()
+
+while True:
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            pygame.quit()
+            sys.exit()
+
+    keys = pygame.key.get_pressed()
+    # Управление левой ракеткой
+    if keys[pygame.K_w] and paddle_left.top > 0:
+        paddle_left.y -= 5
+    if keys[pygame.K_s] and paddle_left.bottom < HEIGHT:
+        paddle_left.y += 5
+
+    # Движение правой ракетки вверх и вниз
+    if keys[pygame.K_UP] and paddle_right.top > 0:
+        paddle_right.y -= 5
+    if keys[pygame.K_DOWN] and paddle_right.bottom < HEIGHT:
+        paddle_right.y += 5
+
+    # Движение мяча
+    ball.x += ball_speed[0]
+    ball.y += ball_speed[1]
+
+    # Отскок мяча от верхней и нижней границ
+    if ball.top <= 0 or ball.bottom >= HEIGHT:
+        ball_speed[1] = -ball_speed[1]
+
+    # Проверка столкновения с ракетками
+    if ball.colliderect(paddle_left) or ball.colliderect(paddle_right):
+        ball_speed[0] = -ball_speed[0]
+
+    # Отрисовка объектов
+    screen.fill(BLACK)
+    pygame.draw.rect(screen, WHITE, paddle_left)
+    pygame.draw.rect(screen, WHITE, paddle_right)
+    pygame.draw.ellipse(screen, WHITE, ball)
+
+    # Обновление экрана
+    pygame.display.flip()
+
+    # Установка частоты кадров
+    clock.tick(FPS)
