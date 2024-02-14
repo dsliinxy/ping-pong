@@ -29,25 +29,31 @@ ball_speed = [3, 3]
 # Основной игровой цикл
 clock = pygame.time.Clock()
 
-while True:
+
+def handle_events():
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             pygame.quit()
             sys.exit()
 
+
+def move_paddles():
     keys = pygame.key.get_pressed()
-    # Управление левой ракеткой
+
+    # Управление левой плиткой
     if keys[pygame.K_w] and paddle_left.top > 0:
         paddle_left.y -= 5
     if keys[pygame.K_s] and paddle_left.bottom < HEIGHT:
         paddle_left.y += 5
 
-    # Движение правой ракетки вверх и вниз
+    # Управление правой плиткой
     if keys[pygame.K_UP] and paddle_right.top > 0:
         paddle_right.y -= 5
     if keys[pygame.K_DOWN] and paddle_right.bottom < HEIGHT:
         paddle_right.y += 5
 
+
+def move_ball():
     # Движение мяча
     ball.x += ball_speed[0]
     ball.y += ball_speed[1]
@@ -56,10 +62,18 @@ while True:
     if ball.top <= 0 or ball.bottom >= HEIGHT:
         ball_speed[1] = -ball_speed[1]
 
+    # Отскок мяча от границ по горизонтали
+    if ball.left <= 0 or ball.right >= WIDTH:
+        ball_speed[0] = -ball_speed[0]
+        ball.x = WIDTH // 2 - BALL_RADIUS
+        ball.y = HEIGHT // 2 - BALL_RADIUS
+
     # Проверка столкновения с ракетками
     if ball.colliderect(paddle_left) or ball.colliderect(paddle_right):
         ball_speed[0] = -ball_speed[0]
 
+
+def draw_objects():
     # Отрисовка объектов
     screen.fill(BLACK)
     pygame.draw.rect(screen, WHITE, paddle_left)
@@ -68,6 +82,14 @@ while True:
 
     # Обновление экрана
     pygame.display.flip()
+
+
+# Основной игровой цикл
+while True:
+    handle_events()
+    move_paddles()
+    move_ball()
+    draw_objects()
 
     # Установка частоты кадров
     clock.tick(FPS)
