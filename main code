@@ -26,9 +26,13 @@ paddle_right = pygame.Rect(WIDTH - 20 - PADDLE_WIDTH, HEIGHT // 2 - PADDLE_HEIGH
 # Начальная скорость мяча
 ball_speed = [3, 3]
 
+# Очки
+score = [0, 0]  # Счет для левого игрока (score[0]) и правого игрока (score[1])
+
+font = pygame.font.Font(None, 36)
+
 # Основной игровой цикл
 clock = pygame.time.Clock()
-
 
 def handle_events():
     for event in pygame.event.get():
@@ -36,26 +40,21 @@ def handle_events():
             pygame.quit()
             sys.exit()
 
-
 def move_paddles():
     keys = pygame.key.get_pressed()
-
     # Управление левой плиткой
     if keys[pygame.K_w] and paddle_left.top > 0:
         paddle_left.y -= 5
     if keys[pygame.K_s] and paddle_left.bottom < HEIGHT:
         paddle_left.y += 5
-
     # Управление правой плиткой
     if keys[pygame.K_UP] and paddle_right.top > 0:
         paddle_right.y -= 5
     if keys[pygame.K_DOWN] and paddle_right.bottom < HEIGHT:
         paddle_right.y += 5
 
-
 def reset_ball():
     ball.center = (WIDTH // 2, HEIGHT // 2)
-
 
 def move_ball():
     # Движение мяча
@@ -67,14 +66,22 @@ def move_ball():
         ball_speed[1] = -ball_speed[1]
 
     # Отскок мяча от границ по горизонтали
-    if ball.left <= 0 or ball.right >= WIDTH:
+    if ball.left <= 0:
         reset_ball()
         ball_speed[0] = -ball_speed[0]
+        # Увеличение счета для правого игрока при попадании мяча в левую границу
+        score[1] += 1
+    elif ball.right >= WIDTH:
+        reset_ball()
+        ball_speed[0] = -ball_speed[0]
+        # Увеличение счета для левого игрока при попадании мяча в правую границу
+        score[0] += 1
 
     # Проверка столкновения с ракетками
-    if ball.colliderect(paddle_left) or ball.colliderect(paddle_right):
+    if ball.colliderect(paddle_left):
         ball_speed[0] = -ball_speed[0]
-
+    elif ball.colliderect(paddle_right):
+        ball_speed[0] = -ball_speed[0]
 
 def draw_objects():
     # Отрисовка объектов
@@ -83,9 +90,12 @@ def draw_objects():
     pygame.draw.rect(screen, WHITE, paddle_right)
     pygame.draw.ellipse(screen, WHITE, ball)
 
+    # Отрисовка счета
+    score_text = font.render(f"{score[0]} : {score[1]}", True, WHITE)
+    screen.blit(score_text, (WIDTH // 2 - score_text.get_width() // 2, 10))
+
     # Обновление экрана
     pygame.display.flip()
-
 
 # Вывод окна с приветствием и элементами управления
 def draw_menu():
@@ -94,11 +104,13 @@ def draw_menu():
     controls_text = font.render("Управление левой плиткой: W - вверх, S - вниз", True, WHITE)
     controls_text2 = font.render("Управление правой плиткой: Стрелка вверх - вверх, Стрелка вниз - вниз", True, WHITE)
     controls_text3 = font.render("ENTER для продолжения...", True, WHITE)
+
     screen.fill(BLACK)
     screen.blit(title_text, (WIDTH // 2 - title_text.get_width() // 2, 100))
     screen.blit(controls_text, (WIDTH // 2 - controls_text.get_width() // 2, 200))
     screen.blit(controls_text2, (WIDTH // 2 - controls_text2.get_width() // 2, 250))
     screen.blit(controls_text3, (WIDTH // 2 - controls_text3.get_width() // 2, 300))
+
     pygame.display.flip()
 
 
@@ -111,10 +123,8 @@ while True:
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_RETURN:
                 break
-
     handle_events()
     draw_menu()
-
     # Завершение ожидания при нажатии клавиши Enter
     keys = pygame.key.get_pressed()
     if keys[pygame.K_RETURN]:
