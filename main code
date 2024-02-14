@@ -53,6 +53,10 @@ def move_paddles():
         paddle_right.y += 5
 
 
+def reset_ball():
+    ball.center = (WIDTH // 2, HEIGHT // 2)
+
+
 def move_ball():
     # Движение мяча
     ball.x += ball_speed[0]
@@ -64,9 +68,8 @@ def move_ball():
 
     # Отскок мяча от границ по горизонтали
     if ball.left <= 0 or ball.right >= WIDTH:
+        reset_ball()
         ball_speed[0] = -ball_speed[0]
-        ball.x = WIDTH // 2 - BALL_RADIUS
-        ball.y = HEIGHT // 2 - BALL_RADIUS
 
     # Проверка столкновения с ракетками
     if ball.colliderect(paddle_left) or ball.colliderect(paddle_right):
@@ -83,6 +86,39 @@ def draw_objects():
     # Обновление экрана
     pygame.display.flip()
 
+
+# Вывод окна с приветствием и элементами управления
+def draw_menu():
+    font = pygame.font.Font(None, 24)
+    title_text = font.render("Добро пожаловать в Пинг-понг!", True, WHITE)
+    controls_text = font.render("Управление левой плиткой: W - вверх, S - вниз", True, WHITE)
+    controls_text2 = font.render("Управление правой плиткой: Стрелка вверх - вверх, Стрелка вниз - вниз", True, WHITE)
+    controls_text3 = font.render("ENTER для продолжения...", True, WHITE)
+    screen.fill(BLACK)
+    screen.blit(title_text, (WIDTH // 2 - title_text.get_width() // 2, 100))
+    screen.blit(controls_text, (WIDTH // 2 - controls_text.get_width() // 2, 200))
+    screen.blit(controls_text2, (WIDTH // 2 - controls_text2.get_width() // 2, 250))
+    screen.blit(controls_text3, (WIDTH // 2 - controls_text3.get_width() // 2, 300))
+    pygame.display.flip()
+
+
+# Отображение меню перед началом игры
+draw_menu()
+
+# Ожидание нажатия клавиши для начала игры
+while True:
+    for event in pygame.event.get():
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_RETURN:
+                break
+
+    handle_events()
+    draw_menu()
+
+    # Завершение ожидания при нажатии клавиши Enter
+    keys = pygame.key.get_pressed()
+    if keys[pygame.K_RETURN]:
+        break
 
 # Основной игровой цикл
 while True:
