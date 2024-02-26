@@ -1,5 +1,124 @@
+import pygame
+import sys
+import random
 
-# Проверка столкновения с ракетками
+# Инициализация Pygame
+pygame.init()
+
+# Константы
+WIDTH, HEIGHT = 625, 400
+BALL_RADIUS = 15
+PADDLE_WIDTH, PADDLE_HEIGHT = 10, 60
+FPS = 60
+
+# Цвета
+WHITE = (255, 255, 255)
+BLACK = (0, 0, 0)
+
+pygame.mixer.init()
+hit_sound = pygame.mixer.Sound("pup.mp3")
+score_sound = pygame.mixer.Sound("pap.mp3")
+pygame.mixer.music.load("music.mp3")
+pygame.mixer.music.play()
+
+# Создание окна
+screen = pygame.display.set_mode((WIDTH, HEIGHT))
+pygame.display.set_caption("Пинг-понг")
+
+background_image = pygame.image.load("PingPong .jpg")
+background_image = pygame. transform.scale(background_image, (background_image.get_width()//4, background_image.get_height()//3.9))
+field_image = pygame.image.load("Ping.png")
+field_image = pygame. transform.scale(field_image, (background_image.get_width()//1.02, background_image.get_height()//1))
+ball_image = pygame.image.load("Снимок_экрана_2024-02-19_в_14.50.57-transformed.png").convert_alpha()
+ball_image = pygame. transform.scale(ball_image, (background_image.get_width()//17, background_image.get_height()//15))
+# paddle_image = pygame.image.load("Ping Pong (tile).png").convert_alpha()
+# paddle_image = pygame. transform.scale(paddle_image, (background_image.get_width()//9, background_image.get_height()//9))
+
+screen.blit(background_image, (0, 0))
+screen.blit(field_image, (0, 0))
+screen.blit(ball_image, (0, 0))
+# screen.blit(paddle_image, (0, 0))
+
+# Инициализация объектов
+ball = pygame.Rect(WIDTH // 2 - BALL_RADIUS, HEIGHT // 2 - BALL_RADIUS, BALL_RADIUS * 2, BALL_RADIUS * 2)
+paddle_left = pygame.Rect(20, HEIGHT // 2 - PADDLE_HEIGHT // 2, PADDLE_WIDTH, PADDLE_HEIGHT)
+paddle_right = pygame.Rect(WIDTH - 20 - PADDLE_WIDTH, HEIGHT // 2 - PADDLE_HEIGHT // 2, PADDLE_WIDTH, PADDLE_HEIGHT)
+
+# Начальная скорость мяча
+ball_speed = [8, 8]
+
+# Скорость компьютерного игрока
+computer_speed = 5
+
+# Очки
+score = [0, 0]  # Счет для левого игрока (score[0]) и правого игрока (score[1])
+
+font = pygame.font.Font(None, 36)
+
+# Основной игровой цикл
+clock = pygame.time.Clock()
+
+# Добавленные переменные для выбора типа игрока
+is_robot_opponent = True  # По умолчанию играем с роботом
+
+def handle_events():
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            pygame.quit()
+            sys.exit()
+
+
+def move_paddles():
+    # Управление левой плиткой
+    keys = pygame.key.get_pressed()
+    if keys[pygame.K_w] and paddle_left.top > 0:
+        paddle_left.y -= 8
+    if keys[pygame.K_s] and paddle_left.bottom < HEIGHT:
+        paddle_left.y += 8
+
+    # # Управление правой плиткой (другом)
+    # if not is_robot_opponent:
+    #     if keys[pygame.K_UP] and paddle_right.top > 0:
+    #         paddle_right.y -= 8
+    # if keys[pygame.K_DOWN] and paddle_right.bottom < HEIGHT:
+    #         paddle_right.y += 8
+
+    # Автоматическое управление правой плиткой компьютером
+    if ball.centery < paddle_right.centery and paddle_right.top > 0:
+        paddle_right.y -= computer_speed
+    elif ball.centery > paddle_right.centery and paddle_right.bottom < HEIGHT:
+        paddle_right.y += computer_speed
+
+
+def reset_ball():
+    ball.center = (WIDTH // 2, HEIGHT // 2)
+    # Установим случайное направление для мяча после восстановления
+    ball_speed[0] *= random.choice([1, -1])
+    ball_speed[1] *= random.choice([1, -1])
+
+
+def move_ball():
+    # Движение мяча
+    ball.x += ball_speed[0]
+    ball.y += ball_speed[1]
+
+    # Отскок мяча от верхней и нижней границ
+    if ball.top <= 0 or ball.bottom >= HEIGHT:
+        ball_speed[1] = -ball_speed[1]
+
+    # Отскок мяча от границ по горизонтали
+    if ball.left <= 0:
+        reset_ball()
+        # Увеличение счета для правого игрока при попадании мяча в левую границу
+        score[1] += 1
+        score_sound.play()
+    elif ball.right >= WIDTH:
+        reset_ball()
+        # Увеличение счета для левого игрока при попадании мяча в правую границу
+        score[0] += 1
+        score_sound.play()
+
+    # Проверка столкновения с ракетками
     if ball.colliderect(paddle_left) or ball.colliderect(paddle_right):
         ball_speed[0] = -ball_speed[0]
         hit_sound.play()
@@ -9,8 +128,8 @@
 def draw_objects():
     # Отрисовка объектов
     screen.blit(field_image, (0, 0))
-    screen.blit(paddle_image, paddle_left)
-    screen.blit(paddle_image, paddle_right)
+    # screen.blit(paddle_image, paddle_left)
+    # screen.blit(paddle_image, paddle_right)
     pygame.draw.rect(screen, WHITE, paddle_left)
     pygame.draw.rect(screen, WHITE, paddle_right)
     screen.blit(ball_image, ball)
@@ -29,51 +148,12 @@ play_button_color = (0, 255, 0)
 # Вывод окна с приветствием и элементами управления
 def draw_menu():
     font = pygame.font.Font(None, 24)
-    # title_text = font.render("Добро пожаловать в Пинг-понг!", True, WHITE)
-    # controls_text = font.render("Управление левой плиткой: W - вверх, S - вниз", True, WHITE)
-    #
-    # if is_robot_opponent:
-    #     controls_text2 = font.render("Управление правой плиткой: Автоматически (робот)", True, WHITE)
-    # else:
-    #     controls_text2 = font.render("Управление правой плиткой: Стрелка вверх - вверх, Стрелка вниз - вниз", True,
-    #                                  WHITE)
-    #
-    # controls_text3 = font.render("R - Сменить оппонента (робот/друг)", True, WHITE)
-    controls_text4 = font.render("ENTER для продолжения...", True, WHITE)
-
     screen.blit(background_image, (0, 0))
-    # screen.blit(title_text, (WIDTH // 2 - title_text.get_width() // 2, 100))
-    # screen.blit(controls_text, (WIDTH // 2 - controls_text.get_width() // 2, 200))
-    # screen.blit(controls_text2, (WIDTH // 2 - controls_text2.get_width() // 2, 250))
-    # screen.blit(controls_text3, (WIDTH // 2 - controls_text3.get_width() // 2, 300))
-    # screen.blit(controls_text4, (WIDTH // 2 - controls_text4.get_width() // 2, 350))
-
-    # pygame.draw.rect(screen, play_button_color, play_button_rect)
-    # play_text = font.render("Играть", True, WHITE)
-    # screen.blit(play_text, (play_button_rect.centerx - play_text.get_width() // 2,
-    #                         play_button_rect.centery - play_text.get_height() // 2))
 
     pygame.display.flip()
 
 # Отображение меню перед началом игры
 draw_menu()
-
-# # Ожидание нажатия клавиши для начала игры
-# while True:
-#     for event in pygame.event.get():
-#         if event.type == pygame.KEYDOWN:
-#             if event.key == pygame.K_RETURN:
-#                 break
-#             elif event.key == pygame.K_r:
-#                 is_robot_opponent = not is_robot_opponent
-#                 draw_menu()
-#
-#     handle_events()
-#     draw_menu()
-#     # Завершение ожидания при нажатии клавиши Enter
-#     keys = pygame.key.get_pressed()
-#     if keys[pygame.K_RETURN]:
-#         break
 
 # Ожидание нажатия клавиши или кнопки Играть
 while True:
@@ -105,7 +185,7 @@ while True:
     move_ball()
     draw_objects()
 
-# Проверка условия завершения игры
+    # Проверка условия завершения игры
     if score[0] >= 8 or score[1] >= 8:
         winner_text = font.render(f"Игрок {1 if score[0] >= 8 else 2} побеждает!", True, WHITE)
         screen.blit(winner_text, (WIDTH // 2 - winner_text.get_width() // 2, HEIGHT // 2))
