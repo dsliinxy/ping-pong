@@ -58,9 +58,6 @@ font = pygame.font.Font(None, 36)
 # Основной игровой цикл
 clock = pygame.time.Clock()
 
-# Добавленные переменные для выбора типа игрока
-is_robot_opponent = True  # По умолчанию играем с роботом
-
 def handle_events():
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -76,18 +73,13 @@ def move_paddles():
     if keys[pygame.K_s] and paddle_left.bottom < HEIGHT:
         paddle_left.y += 8
 
-    # # Управление правой плиткой (другом)
-    # if not is_robot_opponent:
-    #     if keys[pygame.K_UP] and paddle_right.top > 0:
-    #         paddle_right.y -= 8
-    # if keys[pygame.K_DOWN] and paddle_right.bottom < HEIGHT:
-    #         paddle_right.y += 8
+     # Управление правой плиткой (другом)
+     if not is_robot_opponent:
+         if keys[pygame.K_UP] and paddle_right.top > 0:
+             paddle_right.y -= 8
+     if keys[pygame.K_DOWN] and paddle_right.bottom < HEIGHT:
+             paddle_right.y += 8
 
-    # Автоматическое управление правой плиткой компьютером
-    if ball.centery < paddle_right.centery and paddle_right.top > 0:
-        paddle_right.y -= computer_speed
-    elif ball.centery > paddle_right.centery and paddle_right.bottom < HEIGHT:
-        paddle_right.y += computer_speed
 
 
 def reset_ball():
@@ -128,12 +120,12 @@ def move_ball():
 def draw_objects():
     # Отрисовка объектов
     screen.blit(field_image, (0, 0))
-    # screen.blit(paddle_image, paddle_left)
-    # screen.blit(paddle_image, paddle_right)
+    screen.blit(paddle_image, paddle_left)
+    screen.blit(paddle_image, paddle_right)
     pygame.draw.rect(screen, WHITE, paddle_left)
     pygame.draw.rect(screen, WHITE, paddle_right)
     screen.blit(ball_image, ball)
-    # pygame.draw.ellipse(screen, WHITE, ball)
+    pygame.draw.ellipse(screen, WHITE, ball)
 
     # Отрисовка счета
     score_text = font.render(f"{score[0]} : {score[1]}", True, WHITE)
@@ -161,9 +153,6 @@ while True:
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_RETURN:
                 break
-            elif event.key == pygame.K_r:
-                is_robot_opponent = not is_robot_opponent
-                draw_menu()
         elif event.type == pygame.MOUSEBUTTONDOWN:
             if event.button == 1:  # Левая кнопка мыши
                 if play_button_rect.collidepoint(event.pos):
