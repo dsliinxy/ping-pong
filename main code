@@ -41,7 +41,7 @@ paddle_left = pygame.Rect(20, HEIGHT // 2 - PADDLE_HEIGHT // 2, PADDLE_WIDTH, PA
 paddle_right = pygame.Rect(WIDTH - 20 - PADDLE_WIDTH, HEIGHT // 2 - PADDLE_HEIGHT // 2, PADDLE_WIDTH, PADDLE_HEIGHT)
 
 # Начальная скорость мяча
-ball_speed = [8, 8]
+ball_speed = [6, 6]
 
 # Очки
 score = [0, 0]  # Счет для левого игрока (score[0]) и правого игрока (score[1])
@@ -53,7 +53,6 @@ play_button_color = (0, 255, 0)
 
 # Вывод окна с приветствием и элементами управления
 def draw_menu():
-    font = pygame.font.Font(None, 24)
     screen.blit(start_image, (0, 0))
 
     pygame.display.flip()
@@ -67,24 +66,19 @@ def handle_events():
             pygame.quit()
             sys.exit()
 
-# Ожидание нажатия клавиши или кнопки Играть
+# Ожидание нажатия клавиши "Играть"
 while True:
     for event in pygame.event.get():
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_RETURN:
                 break
-        elif event.type == pygame.MOUSEBUTTONDOWN:
-            if event.button == 1:  # Левая кнопка мыши
-                if play_button_rect.collidepoint(event.pos):
-                    break
 
     handle_events()
     draw_menu()
 
-    # Завершение ожидания при нажатии клавиши Enter или кнопки Играть
+# Завершение ожидания при нажатии клавиши "Играть"
     keys = pygame.key.get_pressed()
-    mouse_buttons = pygame.mouse.get_pressed()
-    if keys[pygame.K_RETURN] or mouse_buttons[0] == 1:
+    if keys[pygame.K_RETURN]:
         break
 # Основной игровой цикл
 clock = pygame.time.Clock()
@@ -109,7 +103,6 @@ def reset_ball():
     ball_speed[0] *= random.choice([1, -1])
     ball_speed[1] *= random.choice([1, -1])
 
-
 def move_ball():
     # Движение мяча
     ball.x += ball_speed[0]
@@ -131,12 +124,10 @@ def move_ball():
         score[0] += 1
         score_sound.play()
 
-    # Проверка столкновения с ракетками
+# Проверка столкновения с ракетками
     if ball.colliderect(paddle_left) or ball.colliderect(paddle_right):
         ball_speed[0] = -ball_speed[0]
         hit_sound.play()
-
-
 
 def draw_objects():
     # Отрисовка объектов
@@ -144,7 +135,6 @@ def draw_objects():
     pygame.draw.rect(screen, WHITE, paddle_left)
     pygame.draw.rect(screen, WHITE, paddle_right)
     screen.blit(ball_image, ball)
-    pygame.draw.ellipse(screen, WHITE, ball)
 
     # Отрисовка счета
     score_text = font.render(f"{score[0]} : {score[1]}", True, WHITE)
@@ -162,7 +152,7 @@ while True:
     draw_objects()
 
     # Проверка условия завершения игры
-    if score[0] >= 8 or score[1] >= 8:
+    if score[0] == 8 or score[1] == 8:
         winner_text = font.render(f"Игрок {1 if score[0] >= 8 else 2} побеждает!", True, WHITE)
         screen.blit(winner_text, (WIDTH // 2 - winner_text.get_width() // 2, HEIGHT // 2))
         pygame.display.flip()
