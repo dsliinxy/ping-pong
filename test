@@ -1,0 +1,132 @@
+import pygame
+import pytest
+import sys
+import random
+import unittest
+pygame.init()
+WIDTH, HEIGHT = 625, 400
+BALL_RADIUS = 15
+PADDLE_WIDTH, PADDLE_HEIGHT = 10, 60
+FPS = 60
+ball_speed = [6, 6]
+score = [0, 0]
+WHITE = (255, 255, 255)
+ball = pygame.Rect(WIDTH // 2 - BALL_RADIUS, HEIGHT // 2 - BALL_RADIUS, BALL_RADIUS * 2, BALL_RADIUS * 2)
+paddle_left = pygame.Rect(20, HEIGHT // 2 - PADDLE_HEIGHT // 2, PADDLE_WIDTH, PADDLE_HEIGHT)
+paddle_right = pygame.Rect(WIDTH - 20 - PADDLE_WIDTH, HEIGHT // 2 - PADDLE_HEIGHT // 2, PADDLE_WIDTH, PADDLE_HEIGHT)
+from unittest.mock import MagicMock, call, patch
+
+from Main import move_ball, move_paddles, reset_ball, draw_objects
+
+def test_move_paddles():
+    # Setup: Initialize pygame environment and necessary variables
+    pygame.init()
+
+    # Test the behavior when keys[pygame.K_s] is pressed
+    keys = {pygame.K_w: False, pygame.K_s: True, pygame.K_UP: False, pygame.K_DOWN: False}
+    paddle_left_bottom = paddle_left.bottom
+    move_paddles()
+    assert paddle_left_bottom + 8 == paddle_left.bottom
+
+    # Test the behavior when keys[pygame.K_UP] is pressed
+    keys = {pygame.K_w: False, pygame.K_s: False, pygame.K_UP: True, pygame.K_DOWN: False}
+    paddle_right_top = paddle_right.top
+    move_paddles()
+    assert paddle_right_top - 8 == paddle_right.top
+
+    # Test the behavior when keys[pygame.K_DOWN] is pressed
+    keys = {pygame.K_w: False, pygame.K_s: False, pygame.K_UP: False, pygame.K_DOWN: True}
+    paddle_right_bottom = paddle_right.bottom
+    move_paddles()
+    assert paddle_right_bottom + 8 == paddle_right.bottom
+
+    # Test the behavior when keys[pygame.K_w] is pressed
+    keys = {pygame.K_w: True, pygame.K_s: False, pygame.K_UP: False, pygame.K_DOWN: False}
+    paddle_left_top = paddle_left.top
+    move_paddles()
+    assert paddle_left_top - 8 == paddle_left.top
+
+def test_reset_ball():
+    random.seed(3)  # Зафиксируем seed для воспроизводимости результатов
+
+    ball = {"center": (100, 200)}
+    ball_speed = [2, 3]
+
+    result = reset_ball()
+    expected = [-2, -3]  # Ожидаемое значение после сброса
+
+    assert result == expected
+
+def test_move_ball():
+    # Подготовка данных
+    ball.rect = pygame.Rect(10, 10, 10, 10)
+    ball_speed = [1, 1]
+    paddle_left = pygame.Rect(50, 50, 10, 50)
+    paddle_right = pygame.Rect(200, 50, 10, 50)
+    score = [0, 0]
+
+    # Тест для отскока мяча от верхней и нижней границ
+    ball.top = 0
+    move_ball()
+    assert ball_speed[1] == -1
+
+    ball.bottom = HEIGHT
+    move_ball()
+    assert ball_speed[1] == 1
+
+    # Тест для отскока мяча от левой и правой границ
+    ball.left = 0
+    with patch('reset_ball') as mock_reset_ball:
+        move_ball()
+        mock_reset_ball.assert_called_once()
+        assert score[1] == 1
+
+    ball.right = WIDTH
+    with patch('reset_ball') as mock_reset_ball:
+        move_ball()
+        mock_reset_ball.assert_called_once()
+        assert score[0] == 1
+
+    # Тест для столкновения мяча с ракетками
+    ball.rect = pygame.Rect(15, 50, 10, 10)  # Эмулируем столкновение с левой ракеткой
+    with patch('hit_sound.play') as mock_hit_sound_play:
+        move_ball()
+        assert ball_speed[0] == -1
+        mock_hit_sound_play.assert_called_once()
+
+    ball.rect = pygame.Rect(200, 50, 10, 10)  # Эмулируем столкновение с правой ракеткой
+    with patch('hit_sound.play') as mock_hit_sound_play:
+        move_ball()
+        assert ball_speed[0] == -1
+        mock_hit_sound_play.assert_called_once()
+
+def test_draw_objects(mocker):
+    screen = MagicMock()
+    field_image = MagicMock()
+    ball_image = MagicMock()
+    font = MagicMock()
+
+    # Подготовка тестовых данных
+    paddle_left = pygame.Rect(50, 50, 10, 50)
+    paddle_right = pygame.Rect(200, 50, 10, 50)
+    score = [2, 3]
+    WIDTH = 800
+
+    mocker.patch('pygame.display.flip')
+
+    draw_objects()
+
+    calls = [
+        call.blit(field_image, (0, 0)),
+        call.draw.rect(screen, WHITE, paddle_left),
+        call.draw.rect(screen, WHITE, paddle_right),
+        call.blit(ball_image, ball),
+        call.blit(font.render("2 : 3", True, WHITE),
+                  ((WIDTH // 2 - font.render("2 : 3", True, WHITE).get_width() // 2), 10))
+    ]
+
+    screen.assert_has_calls(calls)
+    pygame.display.flip.assert_called()
+
+if __name__ == '__main__':
+    unittest.main()
