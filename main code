@@ -51,14 +51,20 @@ font = pygame.font.Font(None, 36)
 play_button_rect = pygame.Rect(WIDTH // 2 - 50, HEIGHT // 2 + 105, 110, 50)
 play_button_color = (0, 255, 0)
 
-# Вывод окна с приветствием и элементами управления
+
+''' Функция для вывода начального окна с приветствием и элементами управления. '''
+
+
 def draw_menu():
     screen.blit(start_image, (0, 0))
-
     pygame.display.flip()
 
 # Отображение меню перед началом игры
 draw_menu()
+
+
+''' Функция для закрытия игрового окна. '''
+
 
 def handle_events():
     for event in pygame.event.get():
@@ -83,6 +89,10 @@ while True:
 # Основной игровой цикл
 clock = pygame.time.Clock()
 
+
+''' Функция для управления ракетками, показывает с помощью каких клавиш и как они должны двигаться. '''
+
+
 def move_paddles():
     # Управление левой плиткой
     keys = pygame.key.get_pressed()
@@ -97,11 +107,19 @@ def move_paddles():
     if keys[pygame.K_DOWN] and paddle_right.bottom < HEIGHT:
         paddle_right.y += 8
 
+
+''' Функция для введения мяча заново в игру, она сбрасывает его положение и хаотично направляет по полю. '''
+
+
 def reset_ball():
     ball.center = (WIDTH // 2, HEIGHT // 2)
     # Установим случайное направление для мяча после восстановления
     ball_speed[0] *= random.choice([1, -1])
     ball_speed[1] *= random.choice([1, -1])
+
+
+''' Функция движения мяча, показывает как мяч двигается по полю. '''
+
 
 def move_ball():
     # Движение мяча
@@ -128,6 +146,10 @@ def move_ball():
     if ball.colliderect(paddle_left) or ball.colliderect(paddle_right):
         ball_speed[0] = -ball_speed[0]
         hit_sound.play()
+
+
+''' Функция отрисовывает объекты, выводит картинки для объектов на экран (игровое поле). '''
+
 
 def draw_objects():
     # Отрисовка объектов
