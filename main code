@@ -28,7 +28,7 @@ start_image = pygame.image.load("PingPong .jpg")
 start_image = pygame.transform.scale(start_image, (start_image.get_width()//4, start_image.get_height()//3.9))
 field_image = pygame.image.load("Ping.png")
 field_image = pygame.transform.scale(field_image, (start_image.get_width()//1.02, start_image.get_height()//1))
-ball_image = pygame.image.load("Снимок_экрана_2024-02-19_в_14.50.57-transformed.png").convert_alpha()
+ball_image = pygame.image.load("Снимок_экрана_2024-02-19_в_14.50.57-transformed.png")
 ball_image = pygame.transform.scale(ball_image, (start_image.get_width()//17, start_image.get_height()//15))
 
 screen.blit(start_image, (0, 0))
