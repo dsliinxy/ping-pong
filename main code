@@ -49,7 +49,7 @@ score = [0, 0]  # Счет для левого игрока (score[0]) и пра
 font = pygame.font.Font(None, 36)
 
 play_button_rect = pygame.Rect(WIDTH // 2 - 50, HEIGHT // 2 + 105, 110, 50)
-play_button_color = (0, 255, 0)
+
 
 
 ''' Функция для вывода начального окна с приветствием и элементами управления. '''
